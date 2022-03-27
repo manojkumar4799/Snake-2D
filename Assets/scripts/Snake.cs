@@ -3,12 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using TMPro;
+
 
 public class Snake : MonoBehaviour
 {
+    public int score;
+    public TextMeshProUGUI player1Score;
     public Sprite snakeHead;
     public Transform bodyPart;
     public Sprite shieldEffect;
+    public GameObject gameOverUI;
 
     Vector3 direction;
     Vector3 rotation;
@@ -28,29 +33,38 @@ public class Snake : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Food"))
         {
+            SoundManager.Instance.PlaySound(Sound.Eat);
             Grow();
         }
         if (collision.gameObject.CompareTag("Frog"))
         {
+            SoundManager.Instance.PlaySound(Sound.Eat);
             DecreaseSize();
+            collision.gameObject.SetActive(false);
         }
         if (collision.gameObject.CompareTag("Walls"))
         {
             ScreenSwrap();
+            SoundManager.Instance.PlaySound(Sound.Teleport);
+            
         }
         if (collision.gameObject.CompareTag("Body")&&isShiledActive==false)
         {
-            SceneManager.LoadScene(0);
+            GameOver();
         }
         if (collision.gameObject.CompareTag("Shield"))
         {
             isShiledActive = true;
             collision.gameObject.SetActive(false);
         }
-        if (collision.gameObject.CompareTag("Frog"))
-        {
-            collision.gameObject.SetActive(false);
-        }
+       
+    }
+
+    private void GameOver()
+    {
+        this.enabled = false;
+        SoundManager.Instance.PlayBGM(Sound.GameOver);
+        gameOverUI.SetActive(true);
     }
 
     private void ScreenSwrap()
@@ -87,6 +101,11 @@ public class Snake : MonoBehaviour
     void Update()
     {
 
+        PlayerMovements();
+    }
+
+    private void PlayerMovements()
+    {
         if (Input.GetKeyDown(KeyCode.W) && up == true)
         {
             direction = Vector2.up;
@@ -99,21 +118,24 @@ public class Snake : MonoBehaviour
             rotation = new Vector3(0, 0, 270);
             right = true; left = true; down = true; up = false;
         }
-        else if (Input.GetKeyDown(KeyCode.D)&&right==true)
+        else if (Input.GetKeyDown(KeyCode.D) && right == true)
         {
             direction = Vector2.right;
             rotation = new Vector3(0, 0, 0);
             right = true; left = false; down = true; up = true;
         }
-        else if (Input.GetKeyDown(KeyCode.A)&&left==true)
+        else if (Input.GetKeyDown(KeyCode.A) && left == true)
         {
             direction = Vector2.left;
             rotation = new Vector3(0, 0, 180);
             right = false; left = true; down = true; up = true;
         }
     }
+
     private void Grow()
     {
+        score++;
+        player1Score.text = " Score:" + score;
         Transform newBody= Instantiate(bodyPart);
         newBody.position = body[body.Count - 1].position;
         body.Add(newBody);
@@ -121,6 +143,8 @@ public class Snake : MonoBehaviour
 
     private void DecreaseSize()
     {
+        score--;
+        player1Score.text = " Score:" + score;
         int bodyCount = body.Count - 1;
         if (bodyCount >= 1)
         {
