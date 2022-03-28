@@ -10,11 +10,14 @@ public class Snake : MonoBehaviour
 {
     public int score;
     public TextMeshProUGUI player1Score;
+    public TextMeshProUGUI winnerText;
     public Sprite snakeHead;
     public Transform bodyPart;
     public Sprite shieldEffect;
     public GameObject gameOverUI;
+    public SnakeID snakeID;
 
+    
     Vector3 direction;
     Vector3 rotation;
     List<Transform> body;
@@ -50,7 +53,8 @@ public class Snake : MonoBehaviour
         }
         if (collision.gameObject.CompareTag("Body")&&isShiledActive==false)
         {
-            GameOver();
+            
+            GameOver(gameObject.name);
         }
         if (collision.gameObject.CompareTag("Shield"))
         {
@@ -60,21 +64,34 @@ public class Snake : MonoBehaviour
        
     }
 
-    private void GameOver()
+    private void GameOver(string looserName)
     {
+        string winner=null;
         this.enabled = false;
         SoundManager.Instance.PlayBGM(Sound.GameOver);
         gameOverUI.SetActive(true);
+        if (looserName == "Snake1")
+        {
+            winner = "Snake2"; 
+        }
+        if(looserName=="Snake2")
+        {
+            winner = "Snake1";
+        }
+        winnerText.text = winner + " Won";
+        Destroy(gameObject, 2f);
+        
+       
     }
 
     private void ScreenSwrap()
     {
         Vector3 newPos = transform.position;
-        if (up == false||down==false)
+        if (up==false|| down==false)
         {
              newPos.y = -(transform.position.y);
         }
-        if (left == false||right==false)
+        if (left == false || right == false)
         {
             newPos.x = -(transform.position.x);
         }
@@ -106,6 +123,28 @@ public class Snake : MonoBehaviour
 
     private void PlayerMovements()
     {
+        switch (snakeID)
+        {
+            case SnakeID.Snake1:
+                {
+                    SnakeControls();
+                    break;
+                }
+
+            case SnakeID.Snake2:
+                {
+                    SnakeControlForPlayerTwo();                    
+                    break;                    
+                }
+                
+
+        }
+       
+       
+    }
+
+    private void SnakeControls()
+    {
         if (Input.GetKeyDown(KeyCode.W) && up == true)
         {
             direction = Vector2.up;
@@ -130,7 +169,39 @@ public class Snake : MonoBehaviour
             rotation = new Vector3(0, 0, 180);
             right = false; left = true; down = true; up = true;
         }
+
+
     }
+
+    private void SnakeControlForPlayerTwo()
+    {
+        if (Input.GetKeyDown(KeyCode.UpArrow) && up == true)
+        {
+            direction = Vector2.up;
+            rotation = new Vector3(0, 0, 90);
+            right = true; left = true; down = false; up = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.DownArrow) && down == true)
+        {
+            direction = Vector2.down;
+            rotation = new Vector3(0, 0, 270);
+            right = true; left = true; down = true; up = false;
+        }
+        else if (Input.GetKeyDown(KeyCode.RightArrow) && right == true)
+        {
+            direction = Vector2.right;
+            rotation = new Vector3(0, 0, 0);
+            right = true; left = false; down = true; up = true;
+        }
+        else if (Input.GetKeyDown(KeyCode.LeftArrow) && left == true)
+        {
+            direction = Vector2.left;
+            rotation = new Vector3(0, 0, 180);
+            right = false; left = true; down = true; up = true;
+        }
+
+    }
+
 
     private void Grow()
     {
@@ -167,4 +238,18 @@ public class Snake : MonoBehaviour
         this.gameObject.GetComponent<SpriteRenderer>().sprite = snakeHead;
     }
 
+}
+
+public enum SnakeID
+{
+    Snake1,
+    Snake2
+}
+
+public enum SnakeDirection
+{
+    Up,
+    Down,
+    Right,
+    left
 }
